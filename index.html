@@ -1,0 +1,2655 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>FRUNO — MiniApp (prototype)</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    :root {
+      --primary: #FB702C; /* Основной оранжевый */
+      --primary-light: #FFEBD2; /* Светлый бежевый */
+      --secondary: #F1EAA2; /* Светло-желтый */
+      --accent: #20AC17; /* Зеленый */
+      --accent-light: #45A03F; /* Светло-зеленый */
+      --text: #222;
+      --muted: #666;
+      --bg: #fbfbfb;
+      --card: #fff;
+      --glass: rgba(255, 255, 255, 0.85);
+      --shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+      --radius: 16px;
+      --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      --dark-brown: #603813; /* Темно-коричневый */
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html, body {
+      height: 100%;
+      margin: 0;
+      font-family: 'Inter', 'Segoe UI', system-ui, Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      overflow-x: hidden;
+      scroll-behavior: smooth;
+    }
+
+    /* Анимации */
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes slideIn {
+      from { transform: translateX(-20px); opacity: 0; }
+      to { transform: translateX(0); opacity: 1; }
+    }
+
+    @keyframes pulse {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+      100% { transform: scale(1); }
+    }
+
+    @keyframes shimmer {
+      0% { background-position: -1000px 0; }
+      100% { background-position: 1000px 0; }
+    }
+
+    @keyframes bounce {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-5px); }
+    }
+
+    @keyframes float {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-10px); }
+    }
+
+    /* Header - удален */
+    header {
+      display: none;
+    }
+
+    .logo {
+      font-weight: 800;
+      font-size: 24px;
+      letter-spacing: 1px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+    }
+
+    .logo i {
+      animation: bounce 2s infinite;
+    }
+
+    .tag {
+      font-size: 13px;
+      opacity: 0.9;
+      margin-top: 4px;
+      animation: fadeIn 0.7s ease-out 0.2s both;
+    }
+
+    .container {
+      max-width: 1100px;
+      margin: 24px auto;
+      padding: 0 16px;
+      animation: fadeIn 0.6s ease-out;
+    }
+
+    /* Top controls */
+    .top-actions {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      justify-content: center;
+      margin: 20px 0;
+      animation: fadeIn 0.7s ease-out 0.3s both;
+    }
+
+    .segmented {
+      background: var(--secondary);
+      padding: 6px;
+      border-radius: 12px;
+      display: inline-flex;
+      gap: 6px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    }
+
+    .segmented button {
+      background: transparent;
+      border: none;
+      padding: 12px 20px;
+      border-radius: 10px;
+      cursor: pointer;
+      font-weight: 600;
+      transition: var(--transition);
+      min-width: 120px;
+    }
+
+    .segmented button:hover {
+      transform: translateY(-2px);
+      background: rgba(255, 255, 255, 0.7);
+    }
+
+    .segmented button.active {
+      background: var(--primary);
+      color: #fff;
+      box-shadow: 0 4px 12px rgba(251, 112, 44, 0.3);
+    }
+
+    /* Delivery banner */
+    .delivery {
+      background: linear-gradient(135deg, var(--primary-light), #fff);
+      padding: 16px;
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      text-align: center;
+      font-weight: 700;
+      font-size: 15px;
+      color: var(--dark-brown);
+      border: 2px solid var(--secondary);
+      margin: 20px 0;
+      position: relative;
+      overflow: hidden;
+      animation: fadeIn 0.8s ease-out 0.4s both;
+    }
+
+    .delivery::before {
+      content: "🚚";
+      position: absolute;
+      left: 20px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 20px;
+      animation: bounce 2s infinite;
+    }
+
+    /* Product grid */
+    .product-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      gap: 20px;
+      margin: 25px 0;
+    }
+
+    .card {
+      background: var(--card);
+      border-radius: var(--radius);
+      padding: 16px;
+      border: 1px solid #eee;
+      box-shadow: var(--shadow);
+      display: flex;
+      flex-direction: column;
+      transition: var(--transition);
+      animation: fadeIn 0.5s ease-out;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .card:hover {
+      transform: translateY(-8px);
+      box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+    }
+
+    .card::after {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+      transition: left 0.7s;
+    }
+
+    .card:hover::after {
+      left: 100%;
+    }
+
+    .img {
+      height: 160px;
+      border-radius: 12px;
+      background: linear-gradient(135deg, var(--secondary), #fafafa);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--dark-brown);
+      font-weight: 700;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .img::before {
+      content: "";
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(45deg, transparent 30%, rgba(255, 255, 255, 0.8) 50%, transparent 70%);
+      background-size: 200% 200%;
+      animation: shimmer 2s infinite;
+    }
+
+    .title {
+      font-weight: 800;
+      margin-top: 12px;
+      font-size: 17px;
+      color: var(--text);
+    }
+
+    .meta {
+      font-size: 13px;
+      color: var(--muted);
+      margin-top: 6px;
+      line-height: 1.4;
+    }
+
+    .price {
+      margin-top: 12px;
+      font-weight: 900;
+      color: var(--accent);
+      font-size: 20px;
+    }
+
+    .card .actions {
+      margin-top: auto;
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      padding-top: 12px;
+    }
+
+    .btn {
+      border: none;
+      padding: 10px 16px;
+      border-radius: 10px;
+      cursor: pointer;
+      font-weight: 600;
+      transition: var(--transition);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      font-size: 14px;
+    }
+
+    .btn:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    }
+
+    .btn:active {
+      transform: translateY(-1px);
+    }
+
+    .btn.primary {
+      background: linear-gradient(135deg, var(--primary), #FF8C42);
+      color: white;
+      flex: 1;
+    }
+
+    .btn.primary:hover {
+      background: linear-gradient(135deg, #FF8C42, var(--primary));
+      box-shadow: 0 6px 20px rgba(251, 112, 44, 0.4);
+    }
+
+    .btn.ghost {
+      background: #fff;
+      border: 2px solid #ddd;
+      color: var(--text);
+    }
+
+    .btn.ghost:hover {
+      border-color: var(--primary);
+      color: var(--primary);
+    }
+
+    .btn.accent {
+      background: linear-gradient(135deg, var(--accent), var(--accent-light));
+      color: white;
+    }
+
+    .btn.accent:hover {
+      background: linear-gradient(135deg, var(--accent-light), var(--accent));
+      box-shadow: 0 6px 20px rgba(32, 172, 23, 0.4);
+    }
+
+    /* Fixed cart summary */
+    .cart-summary {
+      position: fixed;
+      left: 16px;
+      right: 16px;
+      bottom: 85px;
+      background: linear-gradient(135deg, var(--primary), #FF8C42);
+      color: #fff;
+      padding: 16px 20px;
+      border-radius: 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+      z-index: 60;
+      animation: fadeIn 0.5s ease-out;
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+    .cart-summary.hidden {
+      transform: translateY(100px);
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    /* Bottom nav */
+    .bottom-nav {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: var(--glass);
+      backdrop-filter: blur(20px);
+      border-top: 1px solid rgba(255, 255, 255, 0.8);
+      display: flex;
+      justify-content: space-around;
+      padding: 12px 8px;
+      z-index: 70;
+      box-shadow: 0 -5px 20px rgba(0, 0, 0, 0.08);
+    }
+
+    .nav-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      font-size: 12px;
+      color: var(--muted);
+      cursor: pointer;
+      padding: 8px 12px;
+      border-radius: 12px;
+      transition: var(--transition);
+      min-width: 60px;
+    }
+
+    .nav-item:hover {
+      background: rgba(251, 112, 44, 0.1);
+      color: var(--primary);
+      transform: translateY(-5px);
+    }
+
+    .nav-item.active {
+      color: var(--primary);
+      font-weight: 800;
+      background: rgba(251, 112, 44, 0.15);
+    }
+
+    .nav-item i {
+      font-size: 20px;
+      margin-bottom: 4px;
+    }
+
+    /* Pages */
+    .page {
+      display: none;
+      padding-bottom: 150px;
+      animation: fadeIn 0.4s ease-out;
+    }
+
+    .page.active {
+      display: block;
+    }
+
+    /* Builder */
+    .builder {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .formats {
+      display: flex;
+      gap: 12px;
+      overflow: auto;
+      padding: 10px 5px;
+    }
+
+    .format {
+      min-width: 140px;
+      padding: 16px;
+      border-radius: 12px;
+      border: 2px solid #eee;
+      background: #fff;
+      cursor: pointer;
+      transition: var(--transition);
+      flex-shrink: 0;
+    }
+
+    .format:hover {
+      transform: translateY(-5px);
+      border-color: var(--primary);
+      box-shadow: 0 10px 20px rgba(251, 112, 44, 0.15);
+    }
+
+    .format.active {
+      background: linear-gradient(135deg, var(--primary-light), #fff);
+      border-color: var(--primary);
+      box-shadow: 0 10px 25px rgba(251, 112, 44, 0.2);
+    }
+
+    .cells {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 14px;
+    }
+
+    .cell {
+      padding: 16px;
+      border-radius: 12px;
+      border: 2px dashed #ddd;
+      background: #fff;
+      min-height: 100px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      transition: var(--transition);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .cell:hover {
+      border-color: var(--primary);
+      transform: scale(1.02);
+    }
+
+    .cell.filled {
+      border-style: solid;
+      border-color: var(--primary);
+      background: linear-gradient(135deg, #FFF5EB, #fff);
+    }
+
+    .cell .name {
+      font-weight: 800;
+      margin-bottom: 5px;
+    }
+
+    .cell .small {
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .cell .remove-btn {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      background: rgba(32, 172, 23, 0.1);
+      color: var(--accent);
+      border: none;
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+    }
+
+    /* Modal & form */
+    .modal {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.6);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 200;
+      animation: fadeIn 0.3s ease-out;
+      backdrop-filter: blur(5px);
+    }
+
+    .modal .panel {
+      background: var(--glass);
+      backdrop-filter: blur(20px);
+      padding: 24px;
+      border-radius: var(--radius);
+      max-width: 500px;
+      width: 90%;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+      animation: fadeIn 0.4s ease-out 0.1s both;
+      border: 1px solid rgba(255, 255, 255, 0.3);
+    }
+
+    .form-row {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-bottom: 16px;
+    }
+
+    label {
+      display: block;
+      font-size: 14px;
+      margin-bottom: 8px;
+      font-weight: 600;
+      color: var(--text);
+    }
+
+    input, select, textarea {
+      padding: 14px;
+      border-radius: 10px;
+      border: 2px solid #ddd;
+      width: 100%;
+      font-family: inherit;
+      font-size: 15px;
+      transition: var(--transition);
+      background: rgba(255, 255, 255, 0.8);
+    }
+
+    input:focus, select:focus, textarea:focus {
+      outline: none;
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(251, 112, 44, 0.2);
+    }
+
+    /* Profile */
+    .profile-grid {
+      display: grid;
+      grid-template-columns: 1fr 300px;
+      gap: 20px;
+    }
+
+    .mini {
+      background: var(--card);
+      padding: 20px;
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      transition: var(--transition);
+    }
+
+    .mini:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+    }
+
+    /* Notification */
+    .notification {
+      position: fixed;
+      top: 100px;
+      right: 20px;
+      background: linear-gradient(135deg, var(--primary), #FF8C42);
+      color: white;
+      padding: 16px 20px;
+      border-radius: 12px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+      z-index: 1000;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      animation: fadeIn 0.3s ease-out, fadeIn 0.3s ease-out 2.7s reverse forwards;
+      max-width: 350px;
+    }
+
+    /* Loading overlay */
+    .loading {
+      position: fixed;
+      inset: 0;
+      background: rgba(255, 255, 255, 0.9);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 9999;
+      transition: opacity 0.3s;
+    }
+
+    .spinner {
+      width: 60px;
+      height: 60px;
+      border: 5px solid rgba(251, 112, 44, 0.2);
+      border-top-color: var(--primary);
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin-bottom: 20px;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    /* Progress bar */
+    .progress {
+      height: 6px;
+      background: #eee;
+      border-radius: 3px;
+      overflow: hidden;
+      margin: 20px 0;
+    }
+
+    .progress-bar {
+      height: 100%;
+      background: linear-gradient(90deg, var(--primary), #FF8C42);
+      border-radius: 3px;
+      transition: width 0.5s ease;
+    }
+
+    /* Badge */
+    .badge {
+      display: inline-block;
+      background: var(--accent);
+      color: white;
+      font-size: 12px;
+      font-weight: 700;
+      padding: 4px 10px;
+      border-radius: 20px;
+      margin-left: 8px;
+      animation: pulse 2s infinite;
+    }
+
+    /* Registration form */
+    .register-form {
+      max-width: 500px;
+      margin: 0 auto;
+      background: var(--glass);
+      padding: 30px;
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(10px);
+    }
+
+    .register-form h2 {
+      color: var(--primary);
+      margin-bottom: 20px;
+      text-align: center;
+    }
+
+    /* About page styles */
+    .about-section {
+      margin-bottom: 30px;
+      animation: fadeIn 0.6s ease-out;
+    }
+
+    .about-section h3 {
+      color: var(--primary);
+      font-size: 18px;
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .about-section h3 i {
+      font-size: 20px;
+    }
+
+    .mission-statement {
+      font-size: 16px;
+      line-height: 1.6;
+      color: var(--text);
+      padding: 20px;
+      background: linear-gradient(135deg, var(--primary-light), #fff);
+      border-radius: var(--radius);
+      border-left: 4px solid var(--primary);
+      margin-bottom: 24px;
+      box-shadow: var(--shadow);
+    }
+
+    .advantages-list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+
+    .advantages-list li {
+      padding: 16px;
+      margin-bottom: 12px;
+      background: var(--card);
+      border-radius: var(--radius);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      transition: var(--transition);
+      border: 1px solid #eee;
+      box-shadow: var(--shadow);
+    }
+
+    .advantages-list li:hover {
+      transform: translateX(5px);
+      border-color: var(--primary);
+      background: linear-gradient(135deg, #fff, var(--primary-light));
+    }
+
+    .advantages-list li i {
+      color: var(--accent);
+      font-size: 18px;
+      width: 24px;
+    }
+
+    .faq-item {
+      background: var(--card);
+      border-radius: var(--radius);
+      padding: 20px;
+      margin-bottom: 16px;
+      border: 1px solid #eee;
+      transition: var(--transition);
+      box-shadow: var(--shadow);
+    }
+
+    .faq-item:hover {
+      border-color: var(--primary);
+      transform: translateY(-2px);
+    }
+
+    .faq-question {
+      font-weight: 700;
+      color: var(--primary);
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .faq-answer {
+      color: var(--muted);
+      line-height: 1.6;
+      padding-left: 26px;
+    }
+
+    /* Loyalty system improvements */
+    .loyalty-card {
+      background: linear-gradient(135deg, var(--secondary), #fff);
+      border-radius: var(--radius);
+      padding: 20px;
+      margin-bottom: 16px;
+      border: 2px solid var(--primary-light);
+      transition: var(--transition);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .loyalty-card::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 4px;
+      height: 100%;
+      background: linear-gradient(to bottom, var(--primary), var(--accent));
+    }
+
+    .loyalty-card:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 10px 25px rgba(251, 112, 44, 0.15);
+    }
+
+    .loyalty-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+
+    .loyalty-level {
+      background: linear-gradient(135deg, var(--primary), #FF8C42);
+      color: white;
+      padding: 6px 16px;
+      border-radius: 20px;
+      font-size: 14px;
+      font-weight: 700;
+    }
+
+    .loyalty-price {
+      font-size: 20px;
+      font-weight: 900;
+      color: var(--accent);
+      margin: 8px 0;
+    }
+
+    .loyalty-description {
+      font-size: 13px;
+      color: var(--muted);
+      line-height: 1.5;
+      margin-top: 8px;
+    }
+
+    .loyalty-benefits {
+      display: flex;
+      gap: 10px;
+      margin-top: 12px;
+      flex-wrap: wrap;
+    }
+
+    .loyalty-benefit {
+      background: rgba(32, 172, 23, 0.1);
+      color: var(--accent);
+      padding: 6px 12px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      .profile-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .cart-summary {
+        left: 12px;
+        right: 12px;
+        bottom: 80px;
+      }
+
+      .segmented button {
+        min-width: 100px;
+        padding: 10px 16px;
+      }
+
+      .product-grid {
+        grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+        gap: 16px;
+      }
+
+      .builder > div {
+        flex-direction: column;
+      }
+
+      .builder > div > div:last-child {
+        width: 100%;
+      }
+
+      .loyalty-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .product-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .segmented {
+        width: 100%;
+      }
+
+      .segmented button {
+        flex: 1;
+        min-width: auto;
+      }
+
+      .advantages-list li {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+      }
+    }
+
+    /* Utility classes */
+    .fade-in {
+      animation: fadeIn 0.6s ease-out;
+    }
+
+    .slide-in {
+      animation: slideIn 0.5s ease-out;
+    }
+
+    .pulse {
+      animation: pulse 2s infinite;
+    }
+
+    .float {
+      animation: float 3s ease-in-out infinite;
+    }
+
+    .hidden {
+      display: none !important;
+    }
+
+    .text-center {
+      text-align: center;
+    }
+
+    .mt-2 { margin-top: 8px; }
+    .mt-4 { margin-top: 16px; }
+    .mb-4 { margin-bottom: 16px; }
+    .p-4 { padding: 16px; }
+  </style>
+</head>
+<body>
+  <!-- Loading overlay -->
+  <div class="loading hidden" id="loading">
+    <div class="spinner"></div>
+    <div>Загрузка...</div>
+  </div>
+
+  <!-- Notification -->
+  <div class="notification hidden" id="notification">
+    <i class="fas fa-check-circle"></i>
+    <div id="notification-text">Уведомление</div>
+  </div>
+
+  <!-- Welcome modal -->
+  <div id="welcomeModal" class="modal" style="display:none">
+    <div class="panel">
+      <h3>Что умеет этот бот?</h3>
+      <p>Этот бот позволяет выбрать готовые наборы или собрать индивидуальный бокс, оформить подписку, использовать бонусы и оплатить заказ.</p>
+      <p>Подписывайтесь на наш канал: <a href="#" id="tgChannelLink">@fruno_channel</a></p>
+      <div class="progress mt-4">
+        <div class="progress-bar" style="width: 0%" id="welcomeProgress"></div>
+      </div>
+      <div style="display:flex;justify-content:flex-end;gap:12px;margin-top:20px">
+        <button class="btn ghost" onclick="closeWelcome(true)">Начать и получить 500 ₽</button>
+        <button class="btn primary" onclick="closeWelcome(false)">Просто посмотреть</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Registration modal -->
+  <div id="registerModal" class="modal hidden">
+    <div class="panel">
+      <div class="register-form">
+        <h2><i class="fas fa-user-plus"></i> Регистрация</h2>
+        <form id="registrationForm" onsubmit="handleRegistration(event)">
+          <div class="form-row">
+            <div style="flex:1">
+              <label for="regName">Имя *</label>
+              <input type="text" id="regName" required placeholder="Введите ваше имя">
+            </div>
+            <div style="flex:1">
+              <label for="regLastName">Фамилия</label>
+              <input type="text" id="regLastName" placeholder="Введите вашу фамилию">
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div style="flex:1">
+              <label for="regEmail">Email *</label>
+              <input type="email" id="regEmail" required placeholder="example@mail.com">
+            </div>
+            <div style="flex:1">
+              <label for="regPhone">Телефон *</label>
+              <input type="tel" id="regPhone" required placeholder="+7 (999) 123-45-67">
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div style="flex:1">
+              <label for="regCity">Город</label>
+              <input type="text" id="regCity" placeholder="Ваш город">
+            </div>
+            <div style="flex:1">
+              <label for="regBirthdate">Дата рождения</label>
+              <input type="date" id="regBirthdate">
+            </div>
+          </div>
+
+          <div>
+            <label for="regSource">Как вы узнали о нас?</label>
+            <select id="regSource">
+              <option value="">Выберите вариант</option>
+              <option value="friends">От друзей</option>
+              <option value="social">Социальные сети</option>
+              <option value="search">Поиск в интернете</option>
+              <option value="ad">Реклама</option>
+              <option value="other">Другое</option>
+            </select>
+          </div>
+
+          <div style="margin-top: 16px;">
+            <label>
+              <input type="checkbox" id="regAgreement" required>
+              Я согласен с <a href="#" onclick="event.preventDefault(); alert('Условия использования')">условиями использования</a> и обработкой персональных данных
+            </label>
+          </div>
+
+          <div style="display:flex;gap:12px;margin-top:24px">
+            <button type="button" class="btn ghost" onclick="closeRegistration()">Отмена</button>
+            <button type="submit" class="btn primary">
+              <i class="fas fa-user-check"></i> Зарегистрироваться
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <div class="container">
+    <!-- Top segmented control -->
+    <div class="top-actions">
+      <div class="segmented" role="tablist">
+        <button class="active" id="tabMenu" onclick="openPage('menu')">
+          <i class="fas fa-store"></i> Меню
+        </button>
+        <button id="tabBuilder" onclick="openPage('builder')">
+          <i class="fas fa-box-open"></i> Собрать набор
+        </button>
+        <button id="tabRegister" onclick="openRegistration()">
+          <i class="fas fa-user-plus"></i> Регистрация
+        </button>
+      </div>
+    </div>
+
+    <!-- Delivery banner -->
+    <div class="delivery">
+      Доставим завтра — бесплатная доставка от L
+      <span class="badge">NEW</span>
+    </div>
+
+    <!-- Pages -->
+    <div id="menu" class="page active">
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:12px">
+        <h2 style="color:var(--primary)">
+          <i class="fas fa-gift float"></i> Готовые наборы
+        </h2>
+        <div style="color:var(--muted);font-size:14px">Выберите набор или соберите свой</div>
+      </div>
+
+      <div class="product-grid" id="bundlesGrid"></div>
+
+      <h3 style="margin-top:24px;color:var(--primary);display:flex;align-items:center;gap:10px">
+        <i class="fas fa-puzzle-piece"></i> Форматы для сборки
+      </h3>
+      <div class="product-grid" id="formatsGrid"></div>
+    </div>
+
+    <div id="builder" class="page">
+      <h2 style="color:var(--primary);display:flex;align-items:center;gap:10px">
+        <i class="fas fa-boxes"></i> Конструктор набора
+      </h2>
+      <div class="builder">
+        <div class="formats" id="formatsList"></div>
+        <div style="display:flex;gap:16px;align-items:flex-start">
+          <div style="flex:1">
+            <div class="cells" id="boxCells"></div>
+          </div>
+          <div style="width:320px">
+            <div class="mini">
+              <div style="font-weight:800;display:flex;align-items:center;gap:8px">
+                <i class="fas fa-eye"></i> Предпросмотр
+              </div>
+              <div id="previewText" style="color:var(--muted);margin-top:12px;min-height:60px;line-height:1.5">Выберите формат и добавьте позиции</div>
+              <div style="margin-top:16px;display:flex;gap:10px">
+                <button class="btn primary" id="confirmBoxBtn">
+                  <i class="fas fa-check-circle"></i> Подтвердить набор
+                </button>
+                <button class="btn ghost" onclick="resetDraft()">
+                  <i class="fas fa-redo"></i> Сбросить
+                </button>
+              </div>
+            </div>
+            <div style="height:16px"></div>
+            <div class="mini">
+              <div style="font-weight:800;display:flex;align-items:center;gap:8px">
+                <i class="fas fa-shopping-basket"></i> Каталог (23 позиции)
+              </div>
+              <div style="margin-top:12px;max-height:300px;overflow:auto" id="catalogList"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div id="cart" class="page">
+      <h2 style="color:var(--primary);display:flex;align-items:center;gap:10px">
+        <i class="fas fa-shopping-cart"></i> Корзина
+      </h2>
+      <div id="cartContent"></div>
+      <div style="height:20px"></div>
+      <div class="mini">
+        <div style="font-weight:800;display:flex;align-items:center;gap:8px">
+          <i class="fas fa-file-invoice-dollar"></i> Оформление
+        </div>
+        <div style="margin-top:16px">
+          <label>Тип</label>
+          <select id="purchaseType">
+            <option value="once">Разовая покупка</option>
+            <option value="sub3">Подписка 3 мес (10% скидка)</option>
+            <option value="sub6">Подписка 6 мес (15% скидка)</option>
+          </select>
+        </div>
+
+        <!-- Улучшенная система лояльности -->
+        <div style="margin-top:24px;padding:20px;background:linear-gradient(135deg, var(--primary-light), #fff);border-radius:var(--radius);border:2px solid var(--primary-light);">
+          <div style="font-weight:800;display:flex;align-items:center;gap:8px;margin-bottom:20px;color:var(--primary);font-size:18px">
+            <i class="fas fa-crown"></i>
+            <div>Программа лояльности</div>
+          </div>
+
+          <div style="font-size:14px;margin-bottom:20px;color:var(--muted);padding:12px;background:rgba(255,255,255,0.7);border-radius:10px;">
+            <div id="loyaltyStatus" style="font-weight:600;">Заказов: 0. Ваш уровень: Нет</div>
+            <div style="font-size:12px;margin-top:4px;color:var(--dark-brown);">Накопите заказы и получайте скидки!</div>
+          </div>
+
+          <div id="loyaltyCards" class="loyalty-cards-container"></div>
+
+          <div style="font-size:12px;color:var(--muted);padding:12px;background:rgba(255,255,255,0.5);border-radius:8px;margin-top:16px">
+            <i class="fas fa-info-circle"></i>
+            Вы можете оплатить нужное количество заказов любого уровня и получить соответствующую скидку без ожидания выполнения условий
+          </div>
+        </div>
+
+        <div style="margin-top:16px">
+          <label>Применить бонусы (баллы списываются): <span id="bonusAvailable">0</span> ₽</label>
+          <div style="margin-top:8px">
+            <input type="checkbox" id="applyBonus" />
+            <span style="margin-left:8px">Использовать бонусы</span>
+          </div>
+        </div>
+        <div style="margin-top:16px">
+          <label>Промокод</label>
+          <input id="promo" placeholder="Введите промокод" />
+        </div>
+        <div style="margin-top:16px">
+          <label>Доставка</label>
+          <select id="deliveryType">
+            <option value="courier">Курьер — 500 ₽ (если < L)</option>
+            <option value="pickup">Самовывоз</option>
+          </select>
+        </div>
+        <div style="margin-top:20px">
+          <button class="btn primary" id="checkoutBtn" style="width:100%">
+            <i class="fas fa-credit-card"></i> Перейти к оформлению
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div id="profile" class="page">
+      <h2 style="color:var(--primary);display:flex;align-items:center;gap:10px">
+        <i class="fas fa-user-circle"></i> Мой аккаунт
+      </h2>
+      <div class="profile-grid">
+        <div>
+          <div class="mini">
+            <div style="display:flex;justify-content:space-between;align-items:center">
+              <div>
+                <div style="font-weight:800;font-size:20px">Привет, <span id="userName">Гость</span></div>
+                <div style="color:var(--muted);font-size:14px;margin-top:4px">Бонусы: <strong id="userBonuses">0</strong> ₽</div>
+                <button class="btn ghost mt-4" onclick="editUserName()">
+                  <i class="fas fa-edit"></i> Изменить имя
+                </button>
+              </div>
+              <div>
+                <button class="btn accent" onclick="openRegistration()">
+                  <i class="fas fa-user-plus"></i> Зарегистрироваться
+                </button>
+                <button class="btn ghost mt-2" onclick="logout()">
+                  <i class="fas fa-sign-out-alt"></i> Выйти
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div style="height:16px"></div>
+          <div class="mini">
+            <div style="font-weight:800;display:flex;align-items:center;gap:8px">
+              <i class="fas fa-history"></i> Активные заказы
+            </div>
+            <div id="ordersList" style="margin-top:12px;color:var(--muted)">Нет активных заказов</div>
+          </div>
+
+          <div style="height:16px"></div>
+          <div class="mini">
+            <div style="font-weight:800;display:flex;align-items:center;gap:8px">
+              <i class="fas fa-calendar-check"></i> Подписки
+            </div>
+            <div id="subsList" style="margin-top:12px;color:var(--muted)">Нет подписок</div>
+          </div>
+
+        </div>
+        <div>
+          <div class="mini">
+            <div style="font-weight:800;display:flex;align-items:center;gap:8px">
+              <i class="fas fa-user-friends"></i> Реферальная программа
+            </div>
+            <div style="margin-top:12px;color:var(--muted)" id="refBox">
+              Пригласите друга — вы оба получите 500 ₽
+              <div class="mt-4">
+                <input type="text" id="refLink" value="https://fruno.example/ref/guest123" readonly style="font-size:12px;padding:8px">
+                <button class="btn ghost mt-2" onclick="copyRefLink()">
+                  <i class="fas fa-copy"></i> Скопировать ссылку
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div style="height:16px"></div>
+          <div class="mini">
+            <div style="font-weight:800;display:flex;align-items:center;gap:8px">
+              <i class="fas fa-headset"></i> Контакты и поддержка
+            </div>
+            <div style="margin-top:12px;color:var(--muted)">
+              <div><i class="fas fa-envelope"></i> help@fruno.example</div>
+              <div class="mt-2"><i class="fas fa-phone"></i> +7 (900) 000-00-00</div>
+              <div class="mt-2"><i class="fas fa-clock"></i> Пн-Пт: 9:00-21:00</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div id="about" class="page">
+      <h2 style="color:var(--primary);display:flex;align-items:center;gap:10px">
+        <i class="fas fa-info-circle"></i> О проекте
+      </h2>
+
+      <div class="about-section">
+        <div class="mission-statement">
+          <strong>Миссия</strong><br>
+          Мы делаем качественные наборы по себестоимости: честные цены — честный вкус.
+        </div>
+      </div>
+
+      <div class="about-section">
+        <h3><i class="fas fa-star"></i> Преимущества</h3>
+        <ul class="advantages-list">
+          <li>
+            <i class="fas fa-tag"></i>
+            <div>
+              <strong>Честные цены</strong><br>
+              <span style="font-size:13px;color:var(--muted)">Без наценок и скрытых платежей</span>
+            </div>
+          </li>
+          <li>
+            <i class="fas fa-calendar-day"></i>
+            <div>
+              <strong>Свежие позиции каждый день</strong><br>
+              <span style="font-size:13px;color:var(--muted)">Только свежие продукты от проверенных поставщиков</span>
+            </div>
+          </li>
+          <li>
+            <i class="fas fa-shipping-fast"></i>
+            <div>
+              <strong>Быстрая доставка</strong><br>
+              <span style="font-size:13px;color:var(--muted)">Доставим в удобное для вас время</span>
+            </div>
+          </li>
+          <li>
+            <i class="fas fa-leaf"></i>
+            <div>
+              <strong>Экологичная упаковка</strong><br>
+              <span style="font-size:13px;color:var(--muted)">Заботимся о природе и будущем планеты</span>
+            </div>
+          </li>
+          <li>
+            <i class="fas fa-user-check"></i>
+            <div>
+              <strong>Персональные рекомендации</strong><br>
+              <span style="font-size:13px;color:var(--muted)">Индивидуальный подход к каждому клиенту</span>
+            </div>
+          </li>
+        </ul>
+      </div>
+
+      <div class="about-section">
+        <h3><i class="fas fa-question-circle"></i> FAQ</h3>
+
+        <div class="faq-item">
+          <div class="faq-question">
+            <i class="fas fa-question"></i>
+            Вопрос: Как отменить подписку?
+          </div>
+          <div class="faq-answer">
+            Ответ: В разделе "Мой аккаунт" → "Подписки"
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <div class="faq-question">
+            <i class="fas fa-question"></i>
+            Вопрос: Есть ли доставка в регионы?
+          </div>
+          <div class="faq-answer">
+            Ответ: Да, доставляем по всей России
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <div class="faq-question">
+            <i class="fas fa-question"></i>
+            Вопрос: Какой срок годности у продуктов?
+          </div>
+          <div class="faq-answer">
+            Ответ: Все продукты имеют свежий срок годности, указанный на упаковке
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <div class="faq-question">
+            <i class="fas fa-question"></i>
+            Вопрос: Можно ли изменить состав набора после заказа?
+          </div>
+          <div class="faq-answer">
+            Ответ: Да, в течение 2 часов после оформления заказа через раздел "Мои заказы"
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Cart summary fixed -->
+  <div class="cart-summary hidden" id="cartSummary">
+    <div id="cartSumText">Корзина: 0 ₽</div>
+    <div>
+      <button class="btn accent" onclick="openPage('cart')">
+        <i class="fas fa-shopping-cart"></i> Перейти в корзину
+      </button>
+    </div>
+  </div>
+
+  <!-- Bottom nav -->
+  <div class="bottom-nav">
+    <div class="nav-item active" onclick="openPage('menu',this)">
+      <i class="fas fa-home"></i>
+      <div>Меню</div>
+    </div>
+    <div class="nav-item" onclick="openPage('cart',this)">
+      <i class="fas fa-shopping-cart"></i>
+      <div>Корзина</div>
+    </div>
+    <div class="nav-item" onclick="openPage('profile',this)">
+      <i class="fas fa-user"></i>
+      <div>Мой аккаунт</div>
+    </div>
+    <div class="nav-item" onclick="openPage('about',this)">
+      <i class="fas fa-info-circle"></i>
+      <div>О проекте</div>
+    </div>
+  </div>
+
+  <script>
+    /* --- Mock data and app state --- */
+    const PRODUCTS = (()=>{
+      const titles = [
+        'Мёд гречишный','Мёд цветочный','Инжир сушёный','Фундук','Миндаль сырой','Кешью','Клюква сушёная','Черника','Курага','Изюм','Финик','Кешью жареный','Ореховый микс','Гранола','Фисташки','Кокосовые чипсы','Шоколадные дольки','Крекер','Мармелад','Арахис солёный','Конфитюр','Семечки','Пряники'
+      ];
+      const arr = titles.slice(0,23).map((t,i)=>{
+        let tier = 'std';
+        if([2,5,9,14].includes(i)) tier='p199';
+        if([3,12].includes(i)) tier='p399';
+        const price = tier==='std'?120 + (i%5)*10 : tier==='p199'?199 : 399;
+        return {id:'p'+i,title:t,price, tier, country:'Россия', kcal: (400 + i*3)};
+      });
+      return arr;
+    })();
+
+    const FORMATS = [
+      {id:'S',title:'S',desc:'4 позиции по 250 г (≈1 кг) — Для знакомства',cells:4,unit:250},
+      {id:'M',title:'M',desc:'6 позиции по 250 г (≈1.5 кг) — Оптимально на неделю',cells:6,unit:250},
+      {id:'L',title:'L',desc:'8 позиции по 250 г (≈2 кг) — Разнообразие вкусов',cells:8,unit:250},
+      {id:'L2',title:'L²',desc:'4 позиции по 500 г (≈2 кг) — Меньше позиций, больше объёма',cells:4,unit:500},
+      {id:'XL',title:'XL',desc:'6 позиции по 500 г (≈3 кг) — Для семьи/офиса',cells:6,unit:500},
+      {id:'2XL',title:'2XL',desc:'8 позиции по 500 г (≈4 кг) — Максимальный формат',cells:8,unit:500},
+      {id:'DEG',title:'Дегустационный',desc:'10 позиции по 100 г (≈1 кг) — Пробный набор',cells:10,unit:100}
+    ];
+
+    // Улучшенная система лояльности
+    const LOYALTY_LEVELS = [
+      {
+        id: 'level1',
+        name: 'Начальный уровень',
+        requiredOrders: 3,
+        requiredMonths: 3,
+        discount: 5,
+        pricePerOrder: 2500,
+        description: 'После 3 заказов в течение 3 месяцев получите скидку 5% на 4-й заказ',
+        benefits: ['Скидка 5%', '3 заказа', 'Приоритетная поддержка']
+      },
+      {
+        id: 'level2',
+        name: 'Продвинутый уровень',
+        requiredOrders: 5,
+        requiredMonths: 6,
+        discount: 10,
+        pricePerOrder: 2400,
+        description: 'После 5 заказов в течение 6 месяцев получите скидку 10% на 6-й заказ',
+        benefits: ['Скидка 10%', '5 заказов', 'Бесплатная доставка', 'Персональный менеджер']
+      },
+      {
+        id: 'level3',
+        name: 'Премиум уровень',
+        requiredOrders: 10,
+        requiredMonths: 12,
+        discount: 15,
+        pricePerOrder: 2300,
+        description: 'После 10 заказов в течение 12 месяцев получите скидку 15% на 11-й заказ',
+        benefits: ['Скидка 15%', '10 заказов', 'VIP-доставка', 'Эксклюзивные предложения', 'Подарки']
+      }
+    ];
+
+    // app state (persisted)
+    const STATE = {
+      cart: JSON.parse(localStorage.getItem('fr_cart')||'[]'),
+      drafts: JSON.parse(localStorage.getItem('fr_drafts')||'{}'),
+      user: JSON.parse(localStorage.getItem('fr_user')||JSON.stringify({
+        name:'Гость',
+        bonuses:0,
+        firstTime:true,
+        registered:false,
+        loyalty: {
+          level: null,
+          ordersCompleted: 0,
+          firstOrderDate: null,
+          prepaidOrders: 0
+        }
+      })),
+      orders: JSON.parse(localStorage.getItem('fr_orders')||'[]'),
+      registrations: JSON.parse(localStorage.getItem('fr_registrations')||'[]')
+    };
+
+    // Email service - отправка на реальный email
+    const EMAIL_SERVICE = {
+      adminEmail: 'tolattigleb@yandex.ru',
+
+      // Функция отправки email через Formspree (бесплатный сервис)
+      sendEmail: async function(subject, body, type) {
+        try {
+          // Используем Formspree для отправки email
+          const formspreeEndpoint = 'https://formspree.io/f/xblnazpw'; // Замените на ваш Formspree ID
+
+          const formData = new FormData();
+          formData.append('_replyto', this.adminEmail);
+          formData.append('_subject', subject);
+          formData.append('message', body);
+          formData.append('_format', 'plain');
+
+          const response = await fetch(formspreeEndpoint, {
+            method: 'POST',
+            body: formData,
+            headers: {
+              'Accept': 'application/json'
+            }
+          });
+
+          if (response.ok) {
+            console.log(`Email sent successfully to ${this.adminEmail}`);
+            return true;
+          } else {
+            console.error('Failed to send email');
+            return false;
+          }
+        } catch (error) {
+          console.error('Error sending email:', error);
+          // Fallback: попробуем другой метод
+          this.sendEmailFallback(subject, body, type);
+          return false;
+        }
+      },
+
+      // Fallback метод через mailto: ссылку
+      sendEmailFallback: function(subject, body, type) {
+        const mailtoLink = `mailto:${this.adminEmail}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+
+        // Создаем скрытую ссылку и кликаем по ней
+        const link = document.createElement('a');
+        link.href = mailtoLink;
+        link.target = '_blank';
+        link.style.display = 'none';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+
+        console.log(`Fallback email triggered for ${type}`);
+        return true;
+      },
+
+      sendRegistrationEmail: async function(regData) {
+        const subject = `FRUNO: Новая регистрация - ${regData.name}`;
+        const body = `
+НОВАЯ РЕГИСТРАЦИЯ В СИСТЕМЕ FRUNO
+
+ДАННЫЕ ПОЛЬЗОВАТЕЛЯ:
+────────────────────
+Имя: ${regData.name}
+Фамилия: ${regData.lastName || 'Не указано'}
+Email: ${regData.email}
+Телефон: ${regData.phone}
+Город: ${regData.city || 'Не указано'}
+Дата рождения: ${regData.birthdate || 'Не указано'}
+Источник: ${regData.source || 'Не указано'}
+
+ТЕХНИЧЕСКАЯ ИНФОРМАЦИЯ:
+────────────────────
+Дата регистрации: ${new Date(regData.timestamp).toLocaleString('ru-RU')}
+Бонусы при регистрации: ${regData.bonuses} ₽
+ID регистрации: ${regData.id}
+
+СТАТУС: НОВЫЙ ПОЛЬЗОВАТЕЛЬ
+────────────────────
+Пользователь зарегистрирован и получил 500 бонусных рублей.
+        `;
+
+        const sent = await this.sendEmail(subject, body, 'registration');
+        if (sent) {
+          console.log('Registration email sent successfully');
+        }
+      },
+
+      sendOrderEmail: async function(orderData, userData) {
+        const subject = `FRUNO: Новый заказ №${orderData.id}`;
+
+        // Форматируем список товаров
+        const itemsList = orderData.items.map(item =>
+          `• ${item.title}: ${item.price} ₽`
+        ).join('\n');
+
+        const body = `
+НОВЫЙ ЗАКАЗ ОФОРМЛЕН
+────────────────────
+
+ИНФОРМАЦИЯ О ЗАКАЗЕ:
+────────────────────
+Номер заказа: ${orderData.id}
+Дата заказа: ${new Date(orderData.date).toLocaleString('ru-RU')}
+Статус: ${orderData.status}
+
+СУММА ЗАКАЗА:
+────────────────────
+Общая сумма: ${orderData.total} ₽
+Использовано бонусов: ${orderData.usedBonus} ₽
+Начислено бонусов: ${orderData.award} ₽
+${orderData.loyaltyDiscount > 0 ? `Скидка по лояльности: ${orderData.loyaltyDiscount} ₽` : ''}
+
+ДАННЫЕ КЛИЕНТА:
+────────────────────
+Имя: ${orderData.name}
+Телефон: ${orderData.phone}
+Email: ${userData.email || 'Не указан'}
+Бонусный баланс: ${userData.bonuses || 0} ₽
+
+СОСТАВ ЗАКАЗА:
+────────────────────
+${itemsList}
+
+КОНТАКТЫ ДЛЯ СВЯЗИ:
+────────────────────
+Телефон: ${orderData.phone}
+${userData.email ? `Email: ${userData.email}` : ''}
+
+СТАТУС: ТРЕБУЕТСЯ ОБРАБОТКА
+────────────────────
+Заказ ожидает подтверждения и обработки.
+        `;
+
+        const sent = await this.sendEmail(subject, body, 'order');
+        if (sent) {
+          console.log('Order email sent successfully');
+        }
+      }
+    };
+
+    // Функции системы лояльности
+    function calculateLoyaltyStatus() {
+      const loyalty = STATE.user.loyalty || {
+        level: null,
+        ordersCompleted: 0,
+        firstOrderDate: null,
+        prepaidOrders: 0
+      };
+
+      // Если есть заказы, но нет даты первого заказа, устанавливаем ее
+      if (loyalty.ordersCompleted > 0 && !loyalty.firstOrderDate && STATE.orders.length > 0) {
+        const firstOrder = STATE.orders.reduce((earliest, order) => {
+          return new Date(order.date) < new Date(earliest.date) ? order : earliest;
+        }, STATE.orders[0]);
+        loyalty.firstOrderDate = firstOrder.date;
+      }
+
+      return loyalty;
+    }
+
+    function getCurrentLoyaltyLevel() {
+      const loyalty = STATE.user.loyalty;
+      if (!loyalty) return null;
+
+      const totalOrders = loyalty.ordersCompleted + (loyalty.prepaidOrders || 0);
+      const firstOrderDate = loyalty.firstOrderDate ? new Date(loyalty.firstOrderDate) : null;
+      const now = new Date();
+
+      // Проверяем, соответствует ли пользователь требованиям каждого уровня
+      for (let i = LOYALTY_LEVELS.length - 1; i >= 0; i--) {
+        const level = LOYALTY_LEVELS[i];
+
+        // Проверка количества заказов
+        if (totalOrders >= level.requiredOrders) {
+          // Проверка временного периода (если есть дата первого заказа)
+          if (firstOrderDate) {
+            const monthsDiff = (now.getFullYear() - firstOrderDate.getFullYear()) * 12 +
+                              (now.getMonth() - firstOrderDate.getMonth());
+            if (monthsDiff >= level.requiredMonths) {
+              return level;
+            }
+          } else {
+            // Если нет даты первого заказа, но оплачены заказы вперед
+            if (loyalty.prepaidOrders >= level.requiredOrders) {
+              return level;
+            }
+          }
+        }
+      }
+
+      return null;
+    }
+
+    function updateLoyaltyUI() {
+      const loyalty = calculateLoyaltyStatus();
+      const currentLevel = getCurrentLoyaltyLevel();
+
+      // Обновляем статус в корзине
+      const loyaltyStatus = document.getElementById('loyaltyStatus');
+      if (loyaltyStatus) {
+        const totalOrders = loyalty.ordersCompleted + (loyalty.prepaidOrders || 0);
+        const levelName = currentLevel ? currentLevel.name : 'Нет';
+        loyaltyStatus.innerHTML = `<div style="color:var(--primary)">Заказов: <strong>${totalOrders}</strong></div><div>Ваш уровень: <strong style="color:var(--accent)">${levelName}</strong></div>`;
+      }
+
+      // Обновляем карточки лояльности
+      const loyaltyCardsContainer = document.getElementById('loyaltyCards');
+      if (loyaltyCardsContainer) {
+        loyaltyCardsContainer.innerHTML = '';
+
+        LOYALTY_LEVELS.forEach((level, index) => {
+          const totalPrice = level.pricePerOrder * level.requiredOrders;
+          const isCurrent = currentLevel && currentLevel.id === level.id;
+          const progress = Math.min(((loyalty.ordersCompleted + (loyalty.prepaidOrders || 0)) / level.requiredOrders) * 100, 100);
+
+          const card = document.createElement('div');
+          card.className = 'loyalty-card';
+          if (isCurrent) {
+            card.style.borderColor = 'var(--accent)';
+            card.style.boxShadow = '0 0 0 2px rgba(32, 172, 23, 0.2)';
+          }
+
+          card.innerHTML = `
+            <div class="loyalty-header">
+              <div style="font-weight:800;font-size:16px;color:var(--primary)">${level.name}</div>
+              <div class="loyalty-level">${level.discount}% скидка</div>
+            </div>
+
+            <div style="margin:12px 0">
+              <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+                <div style="font-size:14px;color:var(--muted)">Прогресс:</div>
+                <div style="font-size:14px;font-weight:600;color:var(--primary)">${loyalty.ordersCompleted + (loyalty.prepaidOrders || 0)}/${level.requiredOrders}</div>
+              </div>
+              <div style="height:6px;background:#eee;border-radius:3px;overflow:hidden">
+                <div style="height:100%;width:${progress}%;background:linear-gradient(90deg,var(--primary),var(--accent));border-radius:3px;transition:width 0.5s"></div>
+              </div>
+            </div>
+
+            <div class="loyalty-price">${totalPrice.toLocaleString()} ₽</div>
+            <div class="loyalty-description">${level.description}</div>
+
+            <div class="loyalty-benefits">
+              ${level.benefits.map(benefit => `<span class="loyalty-benefit">${benefit}</span>`).join('')}
+            </div>
+
+            <div style="margin-top:16px">
+              <label style="display:flex;align-items:center;gap:8px;cursor:pointer;">
+                <input type="radio" name="loyalty" value="${level.id}" id="loyalty${index + 1}" ${isCurrent ? 'checked' : ''}>
+                <span style="font-size:14px">Выбрать этот уровень</span>
+              </label>
+            </div>
+          `;
+
+          loyaltyCardsContainer.appendChild(card);
+        });
+      }
+    }
+
+    function applyLoyaltyDiscount(baseSum) {
+      const selectedLevelId = document.querySelector('input[name="loyalty"]:checked')?.value;
+      let discount = 0;
+      let selectedLevel = null;
+
+      if (selectedLevelId) {
+        selectedLevel = LOYALTY_LEVELS.find(level => level.id === selectedLevelId);
+
+        if (selectedLevel) {
+          // Проверяем, соответствует ли пользователь требованиям уровня
+          const loyalty = STATE.user.loyalty;
+          const totalOrders = loyalty.ordersCompleted + (loyalty.prepaidOrders || 0);
+
+          if (totalOrders >= selectedLevel.requiredOrders - 1) {
+            // Применяем скидку
+            discount = (baseSum * selectedLevel.discount) / 100;
+            showNotification(`Применена скидка по программе лояльности: ${selectedLevel.discount}%`);
+
+            // Обновляем счетчик предоплаченных заказов
+            if (!STATE.user.loyalty.prepaidOrders) {
+              STATE.user.loyalty.prepaidOrders = 0;
+            }
+            STATE.user.loyalty.prepaidOrders += selectedLevel.requiredOrders;
+          }
+        }
+      }
+
+      return {
+        discount: discount,
+        finalSum: baseSum - discount,
+        level: selectedLevel
+      };
+    }
+
+    // Notification system
+    function showNotification(text, duration = 3000) {
+      const notif = document.getElementById('notification');
+      const notifText = document.getElementById('notification-text');
+      notifText.innerText = text;
+      notif.classList.remove('hidden');
+
+      setTimeout(() => {
+        notif.classList.add('hidden');
+      }, duration);
+    }
+
+    // Loading overlay
+    function showLoading() {
+      document.getElementById('loading').classList.remove('hidden');
+    }
+
+    function hideLoading() {
+      document.getElementById('loading').classList.add('hidden');
+    }
+
+    // Initialize on load
+    window.addEventListener('load',()=>{
+      // Animate welcome modal progress bar
+      setTimeout(() => {
+        const progressBar = document.getElementById('welcomeProgress');
+        if (progressBar) {
+          let width = 0;
+          const interval = setInterval(() => {
+            if (width >= 100) {
+              clearInterval(interval);
+            } else {
+              width += 10;
+              progressBar.style.width = width + '%';
+            }
+          }, 100);
+        }
+      }, 500);
+
+      renderBundles();
+      renderFormats();
+      renderCatalog();
+      renderFormatsList();
+      renderCartSummary();
+      renderCart();
+      renderProfile();
+      updateLoyaltyUI();
+
+      // Show welcome modal if first time
+      const m = document.getElementById('welcomeModal');
+      if(STATE.user.firstTime) {
+        setTimeout(() => {
+          m.style.display = 'flex';
+        }, 800);
+      }
+    });
+
+    /* --- Welcome flow --- */
+    function closeWelcome(grant){
+      const m = document.getElementById('welcomeModal');
+      m.style.display = 'none';
+      STATE.user.firstTime = false;
+
+      if(grant){
+        STATE.user.bonuses = (STATE.user.bonuses || 0) + 500;
+        saveState();
+        showNotification('🎉 Вам начислено 500 бонусных рублей!', 4000);
+        renderProfile();
+        renderCartSummary();
+
+        // Open registration after bonus grant
+        setTimeout(() => {
+          openRegistration();
+        }, 1500);
+      }
+
+      saveState();
+    }
+
+    /* --- Registration system --- */
+    function openRegistration() {
+      document.getElementById('registerModal').classList.remove('hidden');
+    }
+
+    function closeRegistration() {
+      document.getElementById('registerModal').classList.add('hidden');
+    }
+
+    async function handleRegistration(event) {
+      event.preventDefault();
+
+      const regData = {
+        id: 'reg_' + Date.now(),
+        timestamp: new Date().toISOString(),
+        name: document.getElementById('regName').value,
+        lastName: document.getElementById('regLastName').value || '',
+        email: document.getElementById('regEmail').value,
+        phone: document.getElementById('regPhone').value,
+        city: document.getElementById('regCity').value || '',
+        birthdate: document.getElementById('regBirthdate').value || '',
+        source: document.getElementById('regSource').value || '',
+        bonuses: 500 // Welcome bonus
+      };
+
+      // Validate email
+      if (!regData.email.includes('@')) {
+        showNotification('Пожалуйста, введите корректный email');
+        return;
+      }
+
+      // Validate phone (simple check)
+      if (regData.phone.length < 5) {
+        showNotification('Пожалуйста, введите корректный телефон');
+        return;
+      }
+
+      showLoading();
+
+      // Simulate registration process
+      setTimeout(async () => {
+        try {
+          // Save to local storage
+          STATE.registrations.push(regData);
+          localStorage.setItem('fr_registrations', JSON.stringify(STATE.registrations));
+
+          // Update user state
+          STATE.user.name = regData.name;
+          STATE.user.bonuses = (STATE.user.bonuses || 0) + 500;
+          STATE.user.registered = true;
+          STATE.user.email = regData.email;
+          STATE.user.phone = regData.phone;
+
+          saveState();
+
+          // Send registration email to admin
+          await EMAIL_SERVICE.sendRegistrationEmail(regData);
+
+          // Close modal and show notification
+          closeRegistration();
+          showNotification(`🎉 Добро пожаловать, ${regData.name}! Вы получили 500 бонусных рублей. Email отправлен администратору.`, 5000);
+
+          // Update UI
+          renderProfile();
+          renderCartSummary();
+          updateLoyaltyUI();
+
+        } catch (error) {
+          console.error('Registration error:', error);
+          showNotification('Регистрация завершена, но возникла ошибка при отправке email');
+        } finally {
+          hideLoading();
+        }
+      }, 1500);
+    }
+
+    /* --- Navigation --- */
+    function openPage(id, navEl){
+      document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+      document.getElementById(id).classList.add('active');
+
+      // bottom nav active toggles
+      document.querySelectorAll('.bottom-nav .nav-item').forEach(n=>n.classList.remove('active'));
+      if(navEl) {
+        navEl.classList.add('active');
+      } else {
+        // set appropriate bottom nav
+        const map = {menu:0,cart:1,profile:2,about:3};
+        document.querySelectorAll('.bottom-nav .nav-item')[map[id]].classList.add('active');
+      }
+
+      // segmented control
+      document.getElementById('tabMenu').classList.toggle('active', id==='menu');
+      document.getElementById('tabBuilder').classList.toggle('active', id==='builder');
+      document.getElementById('tabRegister').classList.toggle('active', false);
+
+      window.scrollTo({top: 0, behavior: 'smooth'});
+
+      // Обновляем UI системы лояльности при открытии корзины
+      if (id === 'cart') {
+        updateLoyaltyUI();
+      }
+    }
+
+    /* --- Rendering: bundles (ready-made sets) --- */
+    function renderBundles(){
+      const el = document.getElementById('bundlesGrid');
+      el.innerHTML = '';
+
+      const ready = [
+        {id:'b1',title:'Большой зимний сет',price:12200,desc:'Праздничный набор из 12 позиций'},
+        {id:'b2',title:'Сет "Поздняя осень"',price:14500,desc:'Осеннее настроение, 10 позиций'},
+        {id:'b3',title:'Подарочный набор S',price:2500,desc:'Для знакомства, 4 позиции'},
+        {id:'b4',title:'Премиум коллекция',price:18900,desc:'Элитные продукты, 8 позиций'}
+      ];
+
+      ready.forEach((b, index) => {
+        const c = document.createElement('div');
+        c.className = 'card';
+        c.style.animationDelay = `${index * 0.1}s`;
+
+        c.innerHTML = `
+          <div class='img'>${b.title}</div>
+          <div class='title'>${b.title}</div>
+          <div class='meta'>${b.desc}</div>
+          <div class='price'>${b.price.toLocaleString()} ₽</div>
+          <div class='actions'>
+            <button class='btn primary' onclick="addToCart({type:'bundle',id:'${b.id}',title:'${b.title}',price:${b.price}})">
+              <i class='fas fa-cart-plus'></i> Добавить в корзину
+            </button>
+            <button class='btn ghost' onclick="openDetails('${b.id}')">
+              <i class='fas fa-info-circle'></i> Подробнее
+            </button>
+          </div>`;
+
+        el.appendChild(c);
+      });
+    }
+
+    function openDetails(id){
+      showNotification(`Открыта карточка набора: ${id}. В полной версии здесь будет подробная информация.`);
+    }
+
+    /* --- Formats (for UI cards) --- */
+    function renderFormats(){
+      const el = document.getElementById('formatsGrid');
+      el.innerHTML = '';
+
+      FORMATS.forEach((f, index) => {
+        const c = document.createElement('div');
+        c.className = 'card';
+        c.style.animationDelay = `${index * 0.1}s`;
+
+        c.innerHTML = `
+          <div class='img'>${f.title}</div>
+          <div class='title'>${f.title} — ${f.desc.split('—')[1].trim()}</div>
+          <div class='meta'>${f.desc}</div>
+          <div class='price'>Формат: ${f.cells} позиций</div>
+          <div class='actions'>
+            <button class='btn primary' onclick="openBuilderWith('${f.id}')">
+              <i class='fas fa-box-open'></i> Собрать
+            </button>
+          </div>`;
+
+        el.appendChild(c);
+      });
+    }
+
+    /* --- Builder logic --- */
+    let currentDraft = {format:null,cells:[],notes:''};
+
+    function renderFormatsList(){
+      const wrap = document.getElementById('formatsList');
+      wrap.innerHTML = '';
+
+      FORMATS.forEach(f => {
+        const b = document.createElement('div');
+        b.className = 'format';
+        b.innerHTML = `
+          <div style="font-weight:800;font-size:18px">${f.title}</div>
+          <div style='font-size:13px;color:#666;margin-top:6px'>${f.desc}</div>`;
+
+        b.onclick = () => {
+          selectFormat(f.id);
+          document.querySelectorAll('.format').forEach(el => el.classList.remove('active'));
+          b.classList.add('active');
+          b.style.transform = 'translateY(-5px)';
+        };
+
+        wrap.appendChild(b);
+      });
+    }
+
+    function openBuilderWith(id){
+      openPage('builder');
+      setTimeout(() => {
+        selectFormat(id);
+        document.querySelectorAll('.format').forEach(el => {
+          if (el.textContent.includes(id)) {
+            el.classList.add('active');
+            el.style.transform = 'translateY(-5px)';
+          }
+        });
+      }, 100);
+    }
+
+    function selectFormat(id){
+      const f = FORMATS.find(x => x.id === id);
+      if(!f) return;
+
+      currentDraft.format = f;
+      currentDraft.cells = Array.from({length: f.cells}, () => null);
+
+      renderCells();
+      updatePreview();
+      saveDraft();
+
+      showNotification(`Выбран формат: ${f.title}`);
+    }
+
+    function renderCells(){
+      const wrap = document.getElementById('boxCells');
+      wrap.innerHTML = '';
+
+      currentDraft.cells.forEach((c, i) => {
+        const node = document.createElement('div');
+        node.className = `cell ${c ? 'filled' : ''}`;
+
+        if(c) {
+          node.innerHTML = `
+            <div class='name'>${c.title}</div>
+            <div class='small'>${c.country} • ${c.kcal} kcal/100g</div>
+            <div class='small'><strong>${c.price} ₽</strong></div>
+            <button class='remove-btn' onclick='removeFromCell(${i})'>
+              <i class='fas fa-times'></i>
+            </button>`;
+        } else {
+          node.innerHTML = `
+            <div class='name'>Ячейка ${i+1}</div>
+            <div class='small'>${currentDraft.format ? currentDraft.format.unit + ' г' : ''}</div>
+            <div style='margin-top:12px'>
+              <button class='btn ghost' onclick='openCatalogFor(${i})'>
+                <i class='fas fa-plus'></i> Добавить
+              </button>
+            </div>`;
+        }
+
+        wrap.appendChild(node);
+      });
+    }
+
+    function openCatalogFor(cellIndex){
+      // Highlight catalog section
+      const catalogList = document.getElementById('catalogList');
+      catalogList.parentElement.parentElement.style.boxShadow = '0 0 0 3px rgba(251, 112, 44, 0.3)';
+      catalogList.parentElement.parentElement.style.transition = 'box-shadow 0.3s';
+
+      setTimeout(() => {
+        catalogList.parentElement.parentElement.style.boxShadow = 'var(--shadow)';
+      }, 2000);
+
+      // Scroll to catalog
+      catalogList.scrollIntoView({behavior: 'smooth', block: 'start'});
+
+      window.catalogTarget = cellIndex;
+      showNotification(`Выберите продукт для ячейки ${cellIndex + 1}`);
+    }
+
+    function removeFromCell(i){
+      currentDraft.cells[i] = null;
+      renderCells();
+      updatePreview();
+      saveDraft();
+      showNotification(`Позиция удалена из ячейки ${i+1}`);
+    }
+
+    /* --- Catalog rendering and select logic --- */
+    function renderCatalog(){
+      const wrap = document.getElementById('catalogList');
+      wrap.innerHTML = '';
+
+      PRODUCTS.forEach((p, index) => {
+        const row = document.createElement('div');
+        row.style.cssText = `
+          display: flex;
+          gap: 12px;
+          align-items: center;
+          padding: 12px;
+          border-bottom: 1px solid #f0f0f0;
+          transition: background 0.3s;
+          animation: fadeIn 0.5s ease-out ${index * 0.05}s both;
+        `;
+
+        row.onmouseenter = () => row.style.background = '#f9f9f9';
+        row.onmouseleave = () => row.style.background = '';
+
+        row.innerHTML = `
+          <div style='width:60px;height:60px;background:linear-gradient(135deg,#f0f0f0,#fafafa);border-radius:10px;display:flex;align-items:center;justify-content:center;color:#999;font-weight:700'>
+            ${p.title.split(' ')[0].slice(0,2)}
+          </div>
+          <div style='flex:1'>
+            <div style='font-weight:700'>${p.title}</div>
+            <div style='font-size:12px;color:#666'>${p.country} • ${p.kcal} kcal/100g</div>
+            ${p.tier !== 'std' ? `<div style='font-size:11px;color:#d32f2f;margin-top:2px'><i class='fas fa-crown'></i> Премиум</div>` : ''}
+          </div>
+          <div style='text-align:right'>
+            <div style='font-weight:800'>${p.price} ₽ / 250 г</div>
+            <div style='margin-top:8px'>
+              <button class='btn primary' onclick='selectProduct("${p.id}")'>
+                <i class='fas fa-plus'></i> Добавить
+              </button>
+            </div>
+          </div>`;
+
+        wrap.appendChild(row);
+      });
+    }
+
+    function selectProduct(pid){
+      const p = PRODUCTS.find(x => x.id === pid);
+      if(!p) return;
+
+      const idx = window.catalogTarget;
+      if(idx == null){
+        showNotification('Сначала выберите ячейку, куда добавить товар');
+        return;
+      }
+
+      // Prevent duplicates
+      if(currentDraft.cells.some(c => c && c.id === p.id)){
+        showNotification('Нельзя добавить одинаковую позицию дважды в набор');
+        return;
+      }
+
+      currentDraft.cells[idx] = p;
+      renderCells();
+      updatePreview();
+      saveDraft();
+
+      showNotification(`"${p.title}" добавлен в ячейку ${idx+1}`);
+    }
+
+    function updatePreview(){
+      const preview = document.getElementById('previewText');
+      if(!currentDraft.format) {
+        preview.innerText = 'Выберите формат набора из списка выше';
+      } else {
+        const chosen = currentDraft.cells.filter(Boolean).length;
+        const total = currentDraft.format.cells;
+        const percent = Math.round((chosen / total) * 100);
+
+        preview.innerHTML = `
+          <strong>${currentDraft.format.title}</strong><br>
+          ${currentDraft.format.desc}<br><br>
+          <div style="display:flex;align-items:center;gap:10px">
+            <div style="flex:1;height:8px;background:#eee;border-radius:4px;overflow:hidden">
+              <div style="height:100%;width:${percent}%;background:linear-gradient(90deg,var(--primary),#FF8C42);border-radius:4px;transition:width 0.5s"></div>
+            </div>
+            <div>${chosen} / ${total}</div>
+          </div>`;
+      }
+    }
+
+    function saveDraft(){
+      const key = 'draft_' + (currentDraft.format ? currentDraft.format.id : 'unknown');
+      STATE.drafts[key] = currentDraft;
+      localStorage.setItem('fr_drafts', JSON.stringify(STATE.drafts));
+    }
+
+    function resetDraft(){
+      if(!confirm('Сбросить текущий черновик? Все выбранные позиции будут удалены.')) return;
+
+      currentDraft = {format: null, cells: []};
+      renderCells();
+      updatePreview();
+      saveDraft();
+
+      showNotification('Черновик сброшен');
+    }
+
+    document.getElementById('confirmBoxBtn').addEventListener('click', () => {
+      if(!currentDraft.format) {
+        showNotification('Сначала выберите формат набора');
+        return;
+      }
+
+      const missing = currentDraft.cells.some(c => !c);
+      if(missing) {
+        if(!confirm('Некоторые ячейки не заполнены. Добавить набор в корзину?')) return;
+      }
+
+      // Calculate price
+      let price = 0;
+      currentDraft.cells.forEach(c => {
+        if(c) price += c.price;
+      });
+
+      const bundle = {
+        type: 'custom',
+        id: 'draft_' + Date.now(),
+        title: `${currentDraft.format.title} — Собранный набор`,
+        price,
+        items: currentDraft.cells.map(x => x ? {id: x.id, title: x.title, price: x.price} : null),
+        format: currentDraft.format.id
+      };
+
+      addToCart(bundle);
+
+      // Clear current draft
+      currentDraft = {format: null, cells: []};
+      renderCells();
+      updatePreview();
+      saveState();
+      renderCart();
+      renderCartSummary();
+
+      showNotification('Набор добавлен в корзину!', 3000);
+    });
+
+    /* --- Cart functions --- */
+    function addToCart(item){
+      // Add animation to cart button
+      const cartBtn = document.querySelector('.bottom-nav .nav-item:nth-child(2) i');
+      cartBtn.style.transform = 'scale(1.3)';
+      cartBtn.style.color = 'var(--accent)';
+
+      setTimeout(() => {
+        cartBtn.style.transform = 'scale(1)';
+        cartBtn.style.color = '';
+      }, 300);
+
+      STATE.cart.push(item);
+      saveState();
+      renderCart();
+      renderCartSummary();
+
+      // Show cart summary with animation
+      const cartSummary = document.getElementById('cartSummary');
+      cartSummary.classList.remove('hidden');
+    }
+
+    function saveState(){
+      localStorage.setItem('fr_cart', JSON.stringify(STATE.cart));
+      localStorage.setItem('fr_user', JSON.stringify(STATE.user));
+      localStorage.setItem('fr_orders', JSON.stringify(STATE.orders));
+      localStorage.setItem('fr_drafts', JSON.stringify(STATE.drafts));
+      localStorage.setItem('fr_registrations', JSON.stringify(STATE.registrations));
+    }
+
+    function renderCartSummary(){
+      const s = STATE.cart.reduce((a, b) => a + (b.price || 0), 0);
+      const cartText = document.getElementById('cartSumText');
+
+      // Animate price change
+      const oldPrice = parseInt(cartText.innerText.replace(/\D/g, '')) || 0;
+      if(s !== oldPrice) {
+        cartText.style.transform = 'scale(1.1)';
+        cartText.style.color = 'var(--accent-light)';
+
+        setTimeout(() => {
+          cartText.style.transform = 'scale(1)';
+          cartText.style.color = '';
+        }, 300);
+      }
+
+      cartText.innerText = `Корзина: ${s.toLocaleString()} ₽`;
+
+      const cartSummary = document.getElementById('cartSummary');
+      if(s > 0) {
+        cartSummary.classList.remove('hidden');
+      } else {
+        cartSummary.classList.add('hidden');
+      }
+    }
+
+    function renderCart(){
+      const el = document.getElementById('cartContent');
+
+      if(STATE.cart.length === 0) {
+        el.innerHTML = `
+          <div class="mini" style="text-align:center;padding:40px">
+            <i class="fas fa-shopping-cart" style="font-size:48px;color:#ddd;margin-bottom:16px"></i>
+            <div style="font-weight:700;color:var(--muted)">Корзина пуста</div>
+            <div style="color:var(--muted);margin-top:8px">Добавьте товары из меню</div>
+            <button class="btn primary mt-4" onclick="openPage('menu')">
+              <i class="fas fa-store"></i> Перейти в меню
+            </button>
+          </div>`;
+
+        renderCartSummary();
+        return;
+      }
+
+      let html = '';
+      STATE.cart.forEach((it, idx) => {
+        html += `
+          <div class='mini' style='margin-bottom:12px;animation:fadeIn 0.5s ease-out ${idx * 0.1}s both'>
+            <div style='display:flex;justify-content:space-between;align-items:flex-start'>
+              <div style='font-weight:800;font-size:16px'>${it.title}</div>
+              <div style='font-weight:900;color:var(--accent);font-size:18px'>${(it.price || 0).toLocaleString()} ₽</div>
+            </div>`;
+
+        if(it.items) {
+          html += `<div style='margin-top:12px;color:#666;font-size:14px'>
+            <i class='fas fa-box-open'></i> ${it.items.filter(i => i).map(itm => itm.title).join(', ')}
+          </div>`;
+        }
+
+        html += `
+            <div style='margin-top:16px;display:flex;gap:10px'>
+              <button class='btn ghost' onclick='editCartItem(${idx})'>
+                <i class='fas fa-edit'></i> Изменить
+              </button>
+              <button class='btn accent' onclick='removeCart(${idx})'>
+                <i class='fas fa-trash'></i> Удалить
+              </button>
+            </div>
+          </div>`;
+      });
+
+      el.innerHTML = html;
+      renderCartSummary();
+    }
+
+    function editCartItem(idx){
+      const it = STATE.cart[idx];
+      if(it.type === 'bundle') {
+        showNotification('Редактирование готовых наборов пока недоступно в прототипе');
+      } else if(it.type === 'custom') {
+        openPage('builder');
+        showNotification('В полной версии здесь можно редактировать набор. Сейчас создайте новый.');
+      }
+    }
+
+    function removeCart(idx){
+      if(!confirm('Удалить товар из корзины?')) return;
+
+      // Animation
+      const cartItem = document.querySelectorAll('#cartContent .mini')[idx];
+      if(cartItem) {
+        cartItem.style.transform = 'translateX(-100px)';
+        cartItem.style.opacity = '0';
+        cartItem.style.transition = 'all 0.3s';
+      }
+
+      setTimeout(() => {
+        STATE.cart.splice(idx, 1);
+        saveState();
+        renderCart();
+        renderCartSummary();
+        showNotification('Товар удален из корзины');
+      }, 300);
+    }
+
+    document.getElementById('checkoutBtn').addEventListener('click', async () => {
+      if(STATE.cart.length === 0) {
+        showNotification('Корзина пуста. Добавьте товары перед оформлением.');
+        return;
+      }
+
+      // Check if user is registered
+      if(!STATE.user.registered) {
+        if(confirm('Для оформления заказа рекомендуется зарегистрироваться. Хотите зарегистрироваться сейчас?')) {
+          openRegistration();
+        }
+        return;
+      }
+
+      // Gather order data
+      const name = prompt('Имя для доставки', STATE.user.name || '');
+      if(!name) return;
+
+      const phone = prompt('Телефон', STATE.user.phone || '');
+      if(!phone) return;
+
+      // Compute base sum
+      let sum = STATE.cart.reduce((a, b) => a + (b.price || 0), 0);
+      const purchaseType = document.getElementById('purchaseType').value;
+
+      if(purchaseType === 'sub3') sum = Math.round(sum * 0.9);
+      if(purchaseType === 'sub6') sum = Math.round(sum * 0.85);
+
+      // Apply loyalty discount
+      const loyaltyDiscount = applyLoyaltyDiscount(sum);
+      if (loyaltyDiscount.discount > 0) {
+        sum = loyaltyDiscount.finalSum;
+      }
+
+      const applyBonus = document.getElementById('applyBonus').checked;
+      let usedBonus = 0;
+
+      if(applyBonus) {
+        usedBonus = Math.min(STATE.user.bonuses || 0, sum);
+        sum -= usedBonus;
+      }
+
+      // Award 5% back
+      const award = Math.round((STATE.cart.reduce((a, b) => a + (b.price || 0), 0)) * 0.05);
+
+      // Mock payment
+      let paymentMessage = `Итого к оплате: ${sum} ₽\nСписано бонусов: ${usedBonus} ₽`;
+
+      if (loyaltyDiscount.discount > 0) {
+        paymentMessage += `\nСкидка по программе лояльности: ${loyaltyDiscount.discount} ₽`;
+      }
+
+      paymentMessage += `\n\nОплатить (эмуляция)?`;
+
+      if(confirm(paymentMessage)){
+        showLoading();
+
+        // Simulate payment processing
+        setTimeout(async () => {
+          try {
+            // Create order
+            const order = {
+              id: 'ORD' + Date.now().toString().slice(-6),
+              name,
+              phone,
+              items: [...STATE.cart],
+              total: sum,
+              usedBonus,
+              award,
+              loyaltyDiscount: loyaltyDiscount.discount,
+              loyaltyLevel: loyaltyDiscount.level ? loyaltyDiscount.level.id : null,
+              status: 'confirmed',
+              date: new Date().toISOString()
+            };
+
+            STATE.orders.push(order);
+
+            // Update loyalty status
+            if (!STATE.user.loyalty) {
+              STATE.user.loyalty = {
+                level: null,
+                ordersCompleted: 0,
+                firstOrderDate: null,
+                prepaidOrders: 0
+              };
+            }
+
+            STATE.user.loyalty.ordersCompleted++;
+
+            // Set first order date if not set
+            if (!STATE.user.loyalty.firstOrderDate) {
+              STATE.user.loyalty.firstOrderDate = new Date().toISOString();
+            }
+
+            // Adjust bonuses
+            STATE.user.bonuses = (STATE.user.bonuses || 0) - usedBonus + award;
+
+            // Clear cart
+            STATE.cart = [];
+
+            saveState();
+            renderCart();
+            renderCartSummary();
+            renderProfile();
+            updateLoyaltyUI();
+
+            // Send order email to admin
+            await EMAIL_SERVICE.sendOrderEmail(order, STATE.user);
+
+            hideLoading();
+
+            showNotification(`🎉 Заказ оформлен! Номер заказа: ${order.id}. Бонусы начислены. Email отправлен администратору.`, 5000);
+
+            // Show order confirmation
+            let confirmationMessage = `Заказ успешно оформлен!\n\nНомер заказа: ${order.id}\nСумма: ${sum} ₽`;
+
+            if (loyaltyDiscount.discount > 0) {
+              confirmationMessage += `\nСкидка по лояльности: ${loyaltyDiscount.discount} ₽`;
+            }
+
+            confirmationMessage += `\nСтатус: Подтвержден\n\nС вами свяжется менеджер для уточнения деталей.`;
+
+            alert(confirmationMessage);
+          } catch (error) {
+            console.error('Order processing error:', error);
+            showNotification('Заказ оформлен, но возникла ошибка при отправке email администратору');
+            hideLoading();
+          }
+        }, 2000);
+      }
+    });
+
+    /* --- Profile rendering --- */
+    function renderProfile(){
+      document.getElementById('userName').innerText = STATE.user.name || 'Гость';
+      document.getElementById('userBonuses').innerText = (STATE.user.bonuses || 0);
+      document.getElementById('bonusAvailable').innerText = (STATE.user.bonuses || 0);
+
+      // Orders
+      const ol = document.getElementById('ordersList');
+      if(STATE.orders.length === 0) {
+        ol.innerHTML = `
+          <div style="text-align:center;padding:20px;color:#999">
+            <i class="fas fa-shopping-bag" style="font-size:32px;margin-bottom:12px"></i>
+            <div>Нет активных заказов</div>
+          </div>`;
+      } else {
+        ol.innerHTML = STATE.orders.map(o => {
+          let loyaltyInfo = '';
+          if (o.loyaltyDiscount > 0) {
+            loyaltyInfo = `<div style="font-size:12px;color:var(--primary);margin-top:4px">
+              <i class="fas fa-crown"></i> Скидка по лояльности: ${o.loyaltyDiscount} ₽
+            </div>`;
+          }
+
+          return `
+          <div style='margin-bottom:12px;padding:12px;background:#f9f9f9;border-radius:10px'>
+            <div style='display:flex;justify-content:space-between'>
+              <div style='font-weight:700'>${o.id}</div>
+              <div style='color:var(--accent);font-weight:800'>${o.total} ₽</div>
+            </div>
+            <div style='display:flex;justify-content:space-between;margin-top:6px;font-size:13px'>
+              <div>${new Date(o.date).toLocaleDateString('ru-RU')}</div>
+              <div style='color:var(--primary);font-weight:600'>${o.status}</div>
+            </div>
+            ${loyaltyInfo}
+          </div>
+          `;
+        }).join('');
+      }
+
+      // Subs - prototype stores purchaseType as subs set? We'll show none
+      document.getElementById('subsList').innerHTML = `
+        <div style="text-align:center;padding:20px;color:#999">
+          <i class="fas fa-calendar-alt" style="font-size:32px;margin-bottom:12px"></i>
+          <div>Нет активных подписок</div>
+          <button class="btn ghost mt-4" onclick="showNotification('В полной версии здесь можно оформить подписку')">
+            <i class="fas fa-plus-circle"></i> Оформить подписку
+          </button>
+        </div>`;
+    }
+
+    function logout(){
+      if(confirm('Выйти из аккаунта? Локальные данные (корзина, бонусы) будут сохранены.')){
+        STATE.user = {
+          name:'Гость',
+          bonuses:0,
+          firstTime:false,
+          registered: false,
+          loyalty: {
+            level: null,
+            ordersCompleted: 0,
+            firstOrderDate: null,
+            prepaidOrders: 0
+          }
+        };
+        saveState();
+        renderProfile();
+        showNotification('Вы вышли из аккаунта');
+      }
+    }
+
+    function editUserName(){
+      const n = prompt('Введите ваше имя', STATE.user.name || '');
+      if(n && n.trim() !== ''){
+        STATE.user.name = n.trim();
+        saveState();
+        renderProfile();
+        showNotification(`Имя изменено на: ${n}`);
+      }
+    }
+
+    function copyRefLink(){
+      const refLink = document.getElementById('refLink');
+      refLink.select();
+      refLink.setSelectionRange(0, 99999);
+
+      navigator.clipboard.writeText(refLink.value).then(() => {
+        showNotification('Ссылка скопирована в буфер обмена!');
+      });
+    }
+
+    /* --- Misc helpers --- */
+    // Apply promo code
+    document.getElementById('promo').addEventListener('change', (e) => {
+      if(e.target.value.toUpperCase() === 'FRUNO50') {
+        showNotification('Промокод FRUNO50 применен: скидка 50₽ (эмуляция)');
+      } else if(e.target.value.toUpperCase() === 'WELCOME100') {
+        showNotification('Промокод WELCOME100 применен: скидка 100₽ (эмуляция)');
+      } else if(e.target.value.trim() !== '') {
+        showNotification('Промокод не найден');
+      }
+    });
+
+    // Initial save
+    saveState();
+
+    // Add some interactive effects
+    document.addEventListener('DOMContentLoaded', () => {
+      // Add hover effects to all buttons
+      document.querySelectorAll('.btn').forEach(btn => {
+        btn.addEventListener('mouseenter', function() {
+          this.style.transform = 'translateY(-3px)';
+        });
+
+        btn.addEventListener('mouseleave', function() {
+          this.style.transform = 'translateY(0)';
+        });
+      });
+
+      // Add scroll animation for cards
+      const observerOptions = {
+        threshold: 0.1,
+        rootMargin: '0px 0px -50px 0px'
+      };
+
+      const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          if(entry.isIntersecting) {
+            entry.target.style.opacity = '1';
+            entry.target.style.transform = 'translateY(0)';
+          }
+        });
+      }, observerOptions);
+
+      document.querySelectorAll('.card, .mini, .format, .loyalty-card, .faq-item, .advantages-list li').forEach(el => {
+        el.style.opacity = '0';
+        el.style.transform = 'translateY(20px)';
+        el.style.transition = 'opacity 0.5s, transform 0.5s';
+        observer.observe(el);
+      });
+
+      // Обновляем цены системы лояльности при изменении корзины
+      document.addEventListener('change', function(e) {
+        if (e.target && e.target.name === 'loyalty') {
+          updateLoyaltyUI();
+        }
+      });
+    });
+  </script>
+</body>
+</html>
